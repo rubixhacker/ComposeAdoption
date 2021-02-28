@@ -3,36 +3,41 @@ package com.hackedcube.composeadoption
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
+import com.hackedcube.composeadoption.data.Dog
+import com.hackedcube.composeadoption.ui.screens.DogDetailsScreen
+import com.hackedcube.composeadoption.ui.screens.DogListScreen
 import com.hackedcube.composeadoption.ui.theme.ComposeAdoptionTheme
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val navController = rememberNavController()
+
             ComposeAdoptionTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
+                NavHost(navController, startDestination = "doggos") {
+                    composable("doggos") {
+                        DogListScreen { dog ->
+                            navController.currentBackStackEntry?.arguments?.putParcelable(
+                                "doggo",
+                                dog
+                            )
+                            navController.navigate("doggo")
+                        }
+                    }
+                    composable("doggo") {
+                        navController.previousBackStackEntry?.arguments?.getParcelable<Dog>("doggo")?.let { dog ->
+                            DogDetailsScreen(dog = dog) {
+                                navController.popBackStack()
+                            }
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ComposeAdoptionTheme {
-        Greeting("Android")
     }
 }
